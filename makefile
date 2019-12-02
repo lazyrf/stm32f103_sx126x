@@ -21,6 +21,7 @@ A2L = $(CROSS_COMPILE)addr2line
 TOP = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 #TOP=$(shell readlink -f "$(dir $(lastword $(MAKEFILE_LIST)))")
 APP_DIR = $(TOP)/app
+HARDWARE_DIR = $(TOP)/hardware
 LIB_DIR = $(TOP)/libs
 CMSIS_DIR = $(LIB_DIR)/stdlib/CMSIS
 STD_DIR = $(LIB_DIR)/stdlib/STM32F10x_StdPeriph_Driver
@@ -44,9 +45,14 @@ VPATH := $(VPATH):$(STD_DIR)/src
 APP_SRC = $(wildcard $(APP_DIR)/*.c)
 VPATH := $(VPATH):$(APP_DIR)
 
-CSRC = $(CMSIS_SRC) $(STD_SRC) $(APP_SRC)
+HARDWARE_SRC = $(wildcard $(HARDWARE_DIR)/*.c)
+VPATH := $(VPATH):$(HARDWARE_DIR)
 
-INCLUDE = $(APP_DIR) \
+CSRC = $(CMSIS_SRC) $(STD_SRC) $(HARDWARE_SRC) $(APP_SRC)
+
+INCLUDE = . \
+	  $(APP_DIR) \
+	  $(HARDWARE_DIR) \
 	  $(STD_DIR)/inc\
 	  $(CMSIS_DIR)/CM3/CoreSupport \
 	  $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
