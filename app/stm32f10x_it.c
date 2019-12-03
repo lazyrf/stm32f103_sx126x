@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "bsp_rcc.h"
+#include "delay.h"
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
@@ -126,6 +127,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+	delay_update();
 }
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
