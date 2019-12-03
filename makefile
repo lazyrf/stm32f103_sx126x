@@ -76,14 +76,14 @@ TARGET_BIN = $(BUILD_DIR)/$(TARGET).bin
 #############################
 # Flags
 ############################
-MCFLAGS = -mcpu=cortex-m3 -mthumb
-OPTIMIZE = -Os
+MCFLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
+OPTIMIZE = -O1
 DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD
-CFLAGS = -fdata-sections -ffunction-sections -g -Wall $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(addprefix -I, $(INCLUDE)) -std=c99 --specs=nano.specs
+CFLAGS = -fdata-sections -ffunction-sections -fmessage-length=0 -MMD -g3 -Wall $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(addprefix -I, $(INCLUDE)) -std=c99 -std=gnu11
 ASFLAGS = $(CFLAGS)
 
 LDSCRIPT = $(TOP)/stm32f103c8tx.ld
-LDFLAGS = -T $(LDSCRIPT) -Wl,--gc-sections --specs=nano.specs --specs=nosys.specs
+LDFLAGS = -T $(LDSCRIPT) $(MCFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -lm -specs=nano.specs
 
 
 ################################
@@ -113,16 +113,19 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: %.s
 	mkdir -p $(dir $@)
 	@echo %% $(notdir $<)
-	$(CC) -c -o $@ $(CFLAGS) $<
+	$(CC) -c -o $@ $(ASFLAGS) $<
 
 
-.PHONY: all flash probe clean
+.PHONY: all flash probe clean erase
 	
 flash:
 	sudo st-flash --reset write $(TARGET_BIN) 0x08000000
 
 probe:
 	sudo st-info --probe
+
+erase:
+	sudo st-flash erase
 
 clean:
 	rm -f $(OBJS) $(TARGET_ELF) $(TARGET_HEX) $(TARGET_BIN)
