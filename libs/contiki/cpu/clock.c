@@ -3,6 +3,7 @@
 #include <sys/clock.h>
 #include <sys/cc.h>
 #include <sys/etimer.h>
+#include "delay.h"
 
 static volatile clock_time_t current_clock = 0;
 static volatile unsigned long current_seconds = 0;

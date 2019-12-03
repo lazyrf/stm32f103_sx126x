@@ -24,7 +24,7 @@
 #include <string.h>
 #include "radio.h"
 #include "timer.h"
-#include "bsp_rcc.h"
+#include "delay.h"
 
 /*!
  * Radio driver structure initialization
@@ -258,7 +258,7 @@ bool radio_config_check(radio_config_t *config)
         }
 
         printf("\r\n================== LoRa config==================\r\n");
-        printf("[Radio] Frequency: %d Hz\r\n", config->freq);
+        printf("[Radio] Frequency: %ld Hz\r\n", config->freq);
         printf("[Radio] Bandwidth: %f KHz\r\n", g_bandwidth_khz);
         printf("[Radio] Spreading Factor: %d\r\n", config->spreading_factor);
         printf("[Radio] Coding Rate: %d\r\n", config->coding_rate);
@@ -835,7 +835,7 @@ void radio_irq_process( void )
                 irq_flag = sx126x_get_irq_status( );
                 sx126x_clear_irq_status( IRQ_RADIO_ALL );
                 err = sx126x_get_device_errors();
-                printf("irq_flag = 0x%04x, err = 0x%04x\r\n", (uint32_t) irq_flag, (uint32_t) err.value);
+                printf("irq_flag = 0x%04lx, err = 0x%04lx\r\n", (uint32_t) irq_flag, (uint32_t) err.value);
 
                 if( ( irq_flag & IRQ_TX_DONE ) == IRQ_TX_DONE ) {
                         // Aron, TimerStop

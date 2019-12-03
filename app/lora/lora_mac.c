@@ -90,7 +90,7 @@ uint8_t tx_buffer[32] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0
         0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF};
 uint8_t rx_buffer[32] = {0};
 
-void lora_mac_test_tx_send(void)
+void lora_mac_test_send(void)
 {
         Radio.send(tx_buffer, 32);
 }
@@ -230,7 +230,7 @@ lora_stats_t lora_mac_stats_get(void)
 
 void lora_mac_set_channel(uint8_t ch)
 {
-        printf("[LoRa_MAC][INFO] Set channel to %d (Freq = %u)\r\n",
+        printf("[LoRa_MAC][INFO] Set channel to %d (Freq = %lu)\r\n",
                 ch, channels[ch]);
         lora_config.freq = channels[ch];
         Radio.set_channel(lora_config.freq);
