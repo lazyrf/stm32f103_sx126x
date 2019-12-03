@@ -120,6 +120,7 @@ void PendSV_Handler(void)
 {
 }
 
+#if 0 /* Use contiki, move to clock.c */
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
@@ -129,5 +130,6 @@ void SysTick_Handler(void)
 {
 	delay_update();
 }
+#endif
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

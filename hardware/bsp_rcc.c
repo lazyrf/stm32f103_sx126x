@@ -78,9 +78,11 @@ int bsp_rcc_init(void)
 #elif CONFIG_RCC_PLL
 #endif
 
+#if 0 /* Use contiki, move to clock.c */
 	if (SysTick_Config(SystemCoreClock / 1000)) {
 		while (1);
 	}
+#endif
 
 	return 0;
 }
