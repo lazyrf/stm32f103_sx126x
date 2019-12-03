@@ -50,8 +50,9 @@ RTOS_SRC = $(RTOS_DIR)/core/sys/autostart.c \
 	   $(RTOS_DIR)/cpu/clock.c
 VPATH := $(VPATH):$(RTOS_DIR)/core/sys:$(RTOS_DIR)/cpu
 
-APP_SRC = $(wildcard $(APP_DIR)/*.c)
-VPATH := $(VPATH):$(APP_DIR)
+APP_SRC = $(wildcard $(APP_DIR)/*.c \
+	  $(APP_DIR)/lora/*.c)
+VPATH := $(VPATH):$(APP_DIR):$(APP_DIR)/lora
 
 HARDWARE_SRC = $(wildcard $(HARDWARE_DIR)/*.c)
 VPATH := $(VPATH):$(HARDWARE_DIR)
@@ -60,6 +61,7 @@ CSRC = $(CMSIS_SRC) $(STD_SRC) $(HARDWARE_SRC) $(RTOS_SRC) $(APP_SRC)
 
 INCLUDE = . \
 	  $(APP_DIR) \
+	  $(APP_DIR)/lora \
 	  $(HARDWARE_DIR) \
 	  $(STD_DIR)/inc\
 	  $(CMSIS_DIR)/CM3/CoreSupport \
@@ -94,7 +96,7 @@ CFLAGS = -fdata-sections -ffunction-sections -fmessage-length=0 -MMD -g3 -Wall $
 ASFLAGS = $(CFLAGS)
 
 LDSCRIPT = $(TOP)/stm32f103c8tx.ld
-LDFLAGS = -T $(LDSCRIPT) $(MCFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -lm -specs=nano.specs
+LDFLAGS = -T $(LDSCRIPT) $(MCFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -lm -specs=nano.specs -u _printf_float
 
 
 ################################
