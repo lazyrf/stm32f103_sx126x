@@ -33,6 +33,7 @@
 #define OLED_DATA	1
 
 void bsp_oled_init(void);
+void bsp_oled_show_string(uint8_t x, uint8_t y, uint8_t *chr);
 
 #endif /* CONFIG_MODULE_OLED */
 
