@@ -25,6 +25,7 @@ typedef struct {
 typedef struct lora_s   lora_t;
 struct lora_s{
 	int is_master;
+	radio_config_t *config;	/* LoRa config (Freq, Bandwidth, SF, CR..) */
         lora_callback_t *callbacks;     /* LoRa mac upper layer event functions */
         radio_events_t radio_events;    /* Radio evnets function pointer */
         lora_stats_t stats;     /* Statistics */
@@ -33,7 +34,7 @@ struct lora_s{
 } ;
 
 void lora_mac_set_channel(uint8_t ch);
-void lora_mac_init(int is_master, lora_callback_t *callbacks);
+void lora_mac_init(int is_master, radio_config_t *config, lora_callback_t *callbacks);
 void lora_mac_test_send(void);
 
 #endif /* __LORA_MAC_H */

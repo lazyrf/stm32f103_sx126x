@@ -1,5 +1,4 @@
 #include "lora_mac.h"
-#include "radio.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -70,20 +69,6 @@ uint32_t channels[LORA_CHANNLE_NUM] = {
         402816000,      // 29
         400691000,      // 30
 #endif
-};
-
-radio_config_t lora_config = {
-        433691000,      // Frequency
-        2,    // Bandwidth [0: 125 kHz, 1: 250 kHz, 2: 500 kHz, 3: Reserved]
-        LORA_SF11,       // Spreading factor
-        LORA_CR_4_5,    // Code Rate
-        22,     // Power config
-        false,   // Fixed Packet length
-        true,    // CRC on
-        false, // Invert IQ on
-        0,      // Symbol timeout
-        8,      // Preamble length
-        64,     // Payload length
 };
 
 uint8_t tx_buffer[32] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
@@ -161,7 +146,7 @@ static void on_radio_tx_timeout( void )
 {
         printf("[LoRa_MAC][INFO] Radio tx timeout.\r\n");
 
-        Radio.set_channel(lora_config.freq);
+        Radio.set_channel(lora_ctx->config->freq);
         Radio.start_rx(RX_TIMEOUT_VALUE);
 
         if ((lora_ctx->callbacks != NULL) && (lora_ctx->callbacks->tx_timeout_cb!= NULL)) {
@@ -232,17 +217,18 @@ void lora_mac_set_channel(uint8_t ch)
 {
         printf("[LoRa_MAC][INFO] Set channel to %d (Freq = %lu)\r\n",
                 ch, channels[ch]);
-        lora_config.freq = channels[ch];
-        Radio.set_channel(lora_config.freq);
+        lora_ctx->config->freq = channels[ch];
+        Radio.set_channel(lora_ctx->config->freq);
         Radio.start_rx(RX_TIMEOUT_VALUE);
 }
 
-void lora_mac_init(int is_master, lora_callback_t *callbacks)
+void lora_mac_init(int is_master, radio_config_t *config, lora_callback_t *callbacks)
 {
 	printf("Init LoRa %s...\r\n", (is_master) ? "Master" : "Slave");
         lora_ctx = (lora_t *) calloc(1, sizeof(lora_t));
 	lora_ctx->is_master = is_master;
         lora_ctx->callbacks = callbacks;
+	lora_ctx->config = config;
 
         //Radio initialization
         lora_ctx->radio_events.tx_done = on_radio_tx_done;
@@ -250,26 +236,26 @@ void lora_mac_init(int is_master, lora_callback_t *callbacks)
         lora_ctx->radio_events.tx_timeout = on_radio_tx_timeout;
         lora_ctx->radio_events.rx_timeout = on_radio_rx_timeout;
         lora_ctx->radio_events.rx_error = on_radio_rx_error;
-        Radio.init( &lora_ctx->radio_events, &lora_config);
+        Radio.init( &lora_ctx->radio_events, lora_ctx->config);
 
         // ------------------ Frequncy -----------------------
-        Radio.set_channel(lora_config.freq);
+        Radio.set_channel(lora_ctx->config->freq);
 
         // --------- TX config (power, bandwidth, SF, coding rate, etc.) ----------
-        Radio.set_tx_config(MODEM_LORA, lora_config.power_config, 0,
-                lora_config.bandwidth, lora_config.spreading_factor,
-                lora_config.coding_rate, lora_config.preamble_len,
-                lora_config.fix_len, lora_config.crc_on, 0,
-                0, lora_config.invert_iq, 3000 );
+        Radio.set_tx_config(MODEM_LORA, lora_ctx->config->power_config, 0,
+                lora_ctx->config->bandwidth, lora_ctx->config->spreading_factor,
+                lora_ctx->config->coding_rate, lora_ctx->config->preamble_len,
+                lora_ctx->config->fix_len, lora_ctx->config->crc_on, 0,
+                0, lora_ctx->config->invert_iq, 3000 );
 
         // --------- RX config (bandwidth, SF, coding rate, etc.) -------------
-        Radio.set_rx_config(MODEM_LORA, lora_config.bandwidth,
-                lora_config.spreading_factor, lora_config.coding_rate,
-                0, lora_config.preamble_len,
-                lora_config.symbol_timeout, lora_config.fix_len,
+        Radio.set_rx_config(MODEM_LORA, lora_ctx->config->bandwidth,
+                lora_ctx->config->spreading_factor, lora_ctx->config->coding_rate,
+                0, lora_ctx->config->preamble_len,
+                lora_ctx->config->symbol_timeout, lora_ctx->config->fix_len,
                 0,
-                lora_config.crc_on, 0, 0,
-                lora_config.invert_iq, true );
+                lora_ctx->config->crc_on, 0, 0,
+                lora_ctx->config->invert_iq, true );
 
         Radio.start_rx( RX_TIMEOUT_VALUE );
 
