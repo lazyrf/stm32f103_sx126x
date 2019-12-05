@@ -9,6 +9,8 @@
 #include "bsp_dbg_uart.h"
 #include "delay.h"
 #include "bsp_oled.h"
+#include "bsp_di.h"
+#include "bsp_key.h"
 
 #include <sys/process.h>
 #include <sys/procinit.h>
@@ -27,7 +29,7 @@ unsigned int idle_count = 0;
 
 PROCESS(led_process, "LED");
 PROCESS(oled_display_process, "OLED_Display");
-//PROCESS(lora_test_process, "LoRa test");
+PROCESS(lora_test_process, "LoRa test");
 AUTOSTART_PROCESSES(&led_process);
 
 // Default LoRa config
@@ -45,13 +47,62 @@ radio_config_t lora_config = {
         64,     // Payload length
 };
 
-int freq_sel = 0;
-int bw_sel = 0;
-int sf_sel = 0;
-int cr_sel = 0;
+uint32_t ch_list[] = {
+        440816000,      // 0
+        438441000,      // 1
+        436066000,      // 2
+        433691000,      // 3
+        428941000,      // 4
+        426566000      // 5
+};
+uint32_t bw_list[] = {125, 250, 500};  // 3
+radio_lora_spreading_factor_t sf_list[] = {LORA_SF5, LORA_SF6, LORA_SF7, LORA_SF8, LORA_SF9, LORA_SF10, LORA_SF11, LORA_SF12}; // 8
+radio_lora_coding_rate_t cr_list[] = {LORA_CR_4_5, LORA_CR_4_6, LORA_CR_4_7, LORA_CR_4_8}; // 4
+
+int sel_item = 0;
 
 uint32_t tx_cnt = 0;
 uint32_t rx_cnt = 0;
+
+int lora_ch_index = 3;
+int lora_bw_index = 0;
+int lora_sf_index = 6;
+int lora_cr_index = 0;
+
+void key1_handler(void)
+{
+	printf("Key1 handler\r\n");
+
+	sel_item++;
+	sel_item %= 4;
+}
+
+void key2_handler(void)
+{
+	printf("Key2 handler\r\n");
+	switch (sel_item) {
+                case 0:
+                        lora_ch_index++;
+                        lora_ch_index %= 6;
+                        lora_config.freq = ch_list[lora_ch_index];
+                        break;
+                case 1:
+                        lora_bw_index++;
+                        lora_bw_index %= 3;
+                        lora_config.bandwidth = lora_bw_index;
+                        break;
+                case 2:
+                        lora_sf_index++;
+                        lora_sf_index %= 8;
+                        lora_config.spreading_factor = sf_list[lora_sf_index];
+                        break;
+                case 3:
+                        lora_cr_index++;
+                        lora_cr_index %= 4;
+                        lora_config.coding_rate = cr_list[lora_cr_index];
+                        break;
+	}
+}
 
 static void lora_app_tx_done_cb(void)
 {
@@ -111,7 +162,6 @@ void oled_show_string(int x, int y, int len, const char *fmt, ...)
 
 	str[len] = '\0';
 
-	printf("### str = %s (origin: %s, len = %d) ###\r\n", str, fmt, len);
 	bsp_oled_show_string(x, y, str);
 
 	free(str);
@@ -132,9 +182,16 @@ PROCESS_THREAD(oled_display_process, ev, data)
 	PROCESS_BEGIN();
 	static int n = 0;
 	static int blink = 0;
+	static int old_config_mode = 0;
 	while (1) {
 		int bw;
 		char cr_str[5];
+
+		int config_mode = DI1_DATA();
+		if (old_config_mode == 1 && config_mode == 0) {
+			// Save config to flash
+			NVIC_SystemReset();
+		}
 
 		switch (lora_config.bandwidth) {
 			case 0:
@@ -166,7 +223,7 @@ PROCESS_THREAD(oled_display_process, ev, data)
 				break;
 		}
 
-		if (freq_sel || bw_sel || sf_sel || cr_sel) {
+		if (config_mode) {
 			if (++n == 5) {
 				if (blink) {
 					oled_show_string(0, 0, 9, "F:%.2fM", lora_config.freq / 1000000.0f);
@@ -174,17 +231,19 @@ PROCESS_THREAD(oled_display_process, ev, data)
 					oled_show_string(0, 2, 5, "SF:%02d", lora_config.spreading_factor);
 					oled_show_string(6 * 8, 2, 5, cr_str);
 				} else {
-					if (freq_sel) {
+					switch (sel_item) {
+					case 0:
 						oled_show_blank(0, 0, 9);
-					}
-					if (bw_sel) {
+						break;
+					case 1:
 						oled_show_blank(10 * 8, 0, 6);
-					}
-					if (sf_sel) {
+						break;
+					case 2:
 						oled_show_blank(0, 2, 5);
-					}
-					if (cr_sel) {
+						break;
+					case 3:
 						oled_show_blank(6 * 8, 2, 5);
+						break;
 					}
 				}
 				n = 0;
@@ -200,12 +259,12 @@ PROCESS_THREAD(oled_display_process, ev, data)
 			oled_show_string(9 * 8, 4, 7, "RX:%4d", rx_cnt);
 		}
 
+		old_config_mode = config_mode;
 		osDelay(100);
 	}
 	PROCESS_END();
 }
 
-#if 0
 
 PROCESS_THREAD(lora_test_process, ev, data)
 {
@@ -216,7 +275,6 @@ PROCESS_THREAD(lora_test_process, ev, data)
         }
         PROCESS_END();
 }
-#endif
 
 int main(void)
 {
@@ -232,6 +290,8 @@ int main(void)
 	bsp_led_init();
 	bsp_oled_init();
 	bsp_dbg_uart_init();
+	bsp_di_init();
+	bsp_key_init();
 
 	show_fw_info();
 
@@ -247,8 +307,13 @@ int main(void)
 	lora_cbs->rx_timeout_cb = lora_app_rx_timeout_cb;
 	lora_cbs->rx_error_cb = lora_app_rx_error_cb;
 
-	//lora_mac_init(1, &lora_config, lora_cbs);
-	//process_start(&lora_test_process, NULL);
+	lora_config.freq = ch_list[lora_ch_index];
+	lora_config.bandwidth = lora_bw_index;
+	lora_config.spreading_factor = sf_list[lora_sf_index];
+	lora_config.coding_rate = cr_list[lora_cr_index];
+
+	lora_mac_init(1, &lora_config, lora_cbs);
+	process_start(&lora_test_process, NULL);
 
 	process_start(&oled_display_process, NULL);
 
