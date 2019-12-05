@@ -7,6 +7,7 @@
 #define CONFIG_MODULE_DBG_UART	1
 #define CONFIG_MODULE_SX126X	1
 #define CONFIG_MODULE_OLED	1
+#define CONFIG_MODULE_DI	1
 
 /* Clock source */
 #define CONFIG_RCC_HSI		0
@@ -135,5 +136,12 @@
 #define CONFIG_OLED_DC_PORT		GPIOB
 #define CONFIG_OLED_DC_PIN		GPIO_Pin_15
 #endif /* CONFIG_MODULE_OLED */
+
+#if CONFIG_MODULE_DI
+#define CONFIG_DI1_GPIO_PIN              GPIO_Pin_8
+#define CONFIG_DI1_GPIO_PORT             GPIOA
+#define CONFIG_DI1_GPIO_CLK              RCC_APB2Periph_GPIOA
+#define CONFIG_DI1_GPIO_CLK_FUN          RCC_APB2PeriphClockCmd
+#endif /* CONFIG_MODULE_DI */
 
 #endif /* _CONFIG_H */
