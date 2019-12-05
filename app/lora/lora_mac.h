@@ -9,7 +9,7 @@
 
 typedef struct lora_callback_s {
         void (*tx_done_cb) (void);
-        void (*rx_done_cb)(uint8_t *, uint8_t, int16_t, int8_t);
+        void (*rx_done_cb)(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
         void (*tx_timeout_cb)(void);
         void (*rx_timeout_cb)(void);
         void (*rx_error_cb)(void);
