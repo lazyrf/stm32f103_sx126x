@@ -12,6 +12,7 @@
 #include "bsp_di.h"
 #include "bsp_key.h"
 #include "bsp_crc.h"
+#include "fw_env.h"
 
 #include <sys/process.h>
 #include <sys/procinit.h>
@@ -190,7 +191,26 @@ PROCESS_THREAD(oled_display_process, ev, data)
 
 		int config_mode = DI1_DATA();
 		if (old_config_mode == 1 && config_mode == 0) {
+			char buf[5];
 			// Save config to flash
+			// Channel
+			sprintf(buf, "%d", lora_ch_index);
+			fw_env_write("ch", buf);
+
+			// Bandwidth
+			sprintf(buf, "%d", lora_bw_index);
+			fw_env_write("bw", buf);
+
+			// Spreading factor
+			sprintf(buf, "%d", lora_sf_index);
+			fw_env_write("sf", buf);
+
+			// Coding rate
+			sprintf(buf, "%d", lora_cr_index);
+			fw_env_write("cr", buf);
+
+			fw_env_save();
+
 			NVIC_SystemReset();
 		}
 
@@ -280,6 +300,7 @@ PROCESS_THREAD(lora_test_process, ev, data)
 int main(void)
 {
 	lora_callback_t *lora_cbs;
+	char *ch_str, *bw_str, *sf_str, *cr_str;
 
 	bsp_rcc_init();
 
@@ -309,6 +330,26 @@ int main(void)
 	lora_cbs->tx_timeout_cb = lora_app_tx_timeout_cb;
 	lora_cbs->rx_timeout_cb = lora_app_rx_timeout_cb;
 	lora_cbs->rx_error_cb = lora_app_rx_error_cb;
+
+	ch_str = fw_getenv("ch");
+	if (ch_str != NULL) {
+		sscanf(ch_str, "%d", &lora_ch_index);
+	}
+
+	bw_str = fw_getenv("bw");
+	if (bw_str != NULL) {
+		sscanf(bw_str, "%d", &lora_bw_index);
+	}
+
+	sf_str = fw_getenv("sf");
+	if (sf_str != NULL) {
+		sscanf(sf_str, "%d", &lora_sf_index);
+	}
+
+	cr_str = fw_getenv("cr");
+	if (cr_str != NULL) {
+		sscanf(cr_str, "%d", &lora_cr_index);
+	}
 
 	lora_config.freq = ch_list[lora_ch_index];
 	lora_config.bandwidth = lora_bw_index;
