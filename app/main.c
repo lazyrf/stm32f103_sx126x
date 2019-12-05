@@ -11,6 +11,7 @@
 #include "bsp_oled.h"
 #include "bsp_di.h"
 #include "bsp_key.h"
+#include "bsp_crc.h"
 
 #include <sys/process.h>
 #include <sys/procinit.h>
@@ -290,10 +291,12 @@ int main(void)
 	bsp_led_init();
 	bsp_oled_init();
 	bsp_dbg_uart_init();
+	show_fw_info();
 	bsp_di_init();
 	bsp_key_init();
-
-	show_fw_info();
+	bsp_crc_init();
+	fw_env_open();
+	fw_printenv();
 
 	process_init();
 	process_start(&etimer_process, NULL);
