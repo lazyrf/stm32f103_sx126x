@@ -120,7 +120,7 @@ void fw_env_save(void)
 {
         uint32_t flash_env_addr;
 
-        *envir.crc = crc_calc((uint32_t *) envir.data, (CONFIG_FW_ENV_SIZE - sizeof(envir.crc)) / sizeof(uint32_t));
+        *envir.crc = bsp_crc_calc((uint32_t *) envir.data, (CONFIG_FW_ENV_SIZE - sizeof(envir.crc)) / sizeof(uint32_t));
 
         bsp_int_flash_unlock();
         bsp_int_flash_erase(CONFIG_FW_ENV_START_ADDR, 1);
