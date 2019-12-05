@@ -309,7 +309,7 @@ void _oled_show_char(uint8_t x, uint8_t y, uint8_t chr)
         }
 }
 
-void bsp_oled_show_string(uint8_t x, uint8_t y, uint8_t *chr)
+void bsp_oled_show_string(uint8_t x, uint8_t y, char *chr)
 {
         unsigned char j = 0;
         while (chr[j] != '\0') {
