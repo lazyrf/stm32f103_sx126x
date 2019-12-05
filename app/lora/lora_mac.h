@@ -33,7 +33,6 @@ struct lora_s{
         uint32_t last_rx_time;  /* Last packet receive time */
 } ;
 
-void lora_mac_set_channel(uint8_t ch);
 void lora_mac_init(int is_master, radio_config_t *config, lora_callback_t *callbacks);
 void lora_mac_test_send(void);
 

@@ -23,54 +23,6 @@ extern struct timer rx_timeout_timer;
 
 #define RX_TIMEOUT_VALUE			0
 
-uint32_t channels[LORA_CHANNLE_NUM] = {
-        440816000,      // 0
-        438441000,      // 1
-        436066000,      // 2
-        433691000,      // 3
-        428941000,      // 4
-        426566000,      // 5
-        424191000,      // 6
-        421816000,      // 7
-        419441000,      // 8
-        417066000,      // 9
-        414691000,      // 10
-        412316000,      // 11
-#if 0
-        470816000,      // 0
-        468691000,      // 1
-        464441000,      // 2
-        462316000,      // 3
-        460191000,      // 4
-        458066000,      // 5
-        455941000,      // 6
-        453816000,      // 7
-        451691000,      // 8
-        449566000,      // 9
-        447441000,      // 10
-        445316000,      // 11
-        443191000,      // 12
-        441066000,      // 13
-        438941000,      // 14
-        436816000,      // 15
-        434691000,      // 16
-        430441000,      // 17
-        428316000,      // 18
-        426191000,      // 19
-        424066000,      // 20
-        421941000,      // 21
-        417691000,      // 22
-        415566000,      // 23
-        413441000,      // 24
-        411316000,      // 25
-        409191000,      // 26
-        407066000,      // 27
-        404941000,      // 28
-        402816000,      // 29
-        400691000,      // 30
-#endif
-};
-
 uint8_t tx_buffer[32] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
         0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF};
 uint8_t rx_buffer[32] = {0};
@@ -211,15 +163,6 @@ PROCESS_THREAD(lora_irq_process, ev, data)
 lora_stats_t lora_mac_stats_get(void)
 {
         return lora_ctx->stats;
-}
-
-void lora_mac_set_channel(uint8_t ch)
-{
-        printf("[LoRa_MAC][INFO] Set channel to %d (Freq = %lu)\r\n",
-                ch, channels[ch]);
-        lora_ctx->config->freq = channels[ch];
-        Radio.set_channel(lora_ctx->config->freq);
-        Radio.start_rx(RX_TIMEOUT_VALUE);
 }
 
 void lora_mac_init(int is_master, radio_config_t *config, lora_callback_t *callbacks)
