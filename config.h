@@ -144,6 +144,11 @@
 #define CONFIG_DI1_GPIO_PORT             GPIOA
 #define CONFIG_DI1_GPIO_CLK              RCC_APB2Periph_GPIOA
 #define CONFIG_DI1_GPIO_CLK_FUN          RCC_APB2PeriphClockCmd
+
+#define CONFIG_DI2_GPIO_PIN              GPIO_Pin_11
+#define CONFIG_DI2_GPIO_PORT             GPIOB
+#define CONFIG_DI2_GPIO_CLK              RCC_APB2Periph_GPIOB
+#define CONFIG_DI2_GPIO_CLK_FUN          RCC_APB2PeriphClockCmd
 #endif /* CONFIG_MODULE_DI */
 
 

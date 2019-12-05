@@ -6,6 +6,7 @@
 #if CONFIG_MODULE_DI
 
 #define DI1_DATA()         GPIO_ReadInputDataBit(CONFIG_DI1_GPIO_PORT, CONFIG_DI1_GPIO_PIN)
+#define DI2_DATA()         GPIO_ReadInputDataBit(CONFIG_DI2_GPIO_PORT, CONFIG_DI2_GPIO_PIN)
 
 void bsp_di_init(void);
 
