@@ -71,6 +71,10 @@ int lora_bw_index = 0;
 int lora_sf_index = 6;
 int lora_cr_index = 0;
 
+uint8_t tx_buffer[32] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
+        0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF};
+uint8_t rx_buffer[32] = {0};
+
 void key1_handler(void)
 {
 	printf("Key1 handler\r\n");
@@ -106,16 +110,41 @@ void key2_handler(void)
 	}
 }
 
+void dump_packet(uint8_t *packet, int length, int16_t rssi, int8_t snr)
+{
+	printf("======= Receive packet (rssi =%d, snr = %d) =======\r\n", rssi, snr);
+
+	for (int cnt = 0; cnt < length; cnt++) {
+		printf("%02x%s", packet[cnt], (cnt % 16 == 15) ? "\r\n" : " ");
+	}
+	if (length % 16 == 0) {
+		printf("==================================================\r\n");
+	} else {
+		printf("\r\n==================================================\r\n");
+	}
+}
+
 static void lora_app_tx_done_cb(void)
 {
-        printf("[LoRa_APP][INFO] Packet tx success.\r\n");
+	printf("[LoRa_APP][INFO] Packet tx success.\r\n");
 	tx_cnt++;
 }
 
 static void lora_app_rx_done_cb(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-        printf("[LoRa_APP][INFO] Packet rx success.\r\n");
-	rx_cnt++;
+	printf("[LoRa_APP][INFO] Packet rx success.\r\n");
+
+	// dump_packet(payload, size, rssi, snr);
+
+	if (memcmp(payload, tx_buffer, 32) == 0) {
+		if (!DI2_DATA()) {
+			mdelay(200);
+			memcpy(rx_buffer, tx_buffer, 32);
+			rx_buffer[0] = 0x88;
+			lora_mac_send(tx_buffer, 32);
+		}
+		rx_cnt++;
+	}
 }
 
 void lora_app_tx_timeout_cb(void)
@@ -289,12 +318,14 @@ PROCESS_THREAD(oled_display_process, ev, data)
 
 PROCESS_THREAD(lora_test_process, ev, data)
 {
-        PROCESS_BEGIN();
-        while(1) {
-                lora_mac_test_send();
-                osDelay(2000);
-        }
-        PROCESS_END();
+	PROCESS_BEGIN();
+	while(1) {
+		if (DI2_DATA()) {
+			lora_mac_send(tx_buffer, 32);
+		}
+		osDelay(5000);
+	}
+	PROCESS_END();
 }
 
 int main(void)

@@ -34,7 +34,7 @@ struct lora_s{
 } ;
 
 void lora_mac_init(int is_master, radio_config_t *config, lora_callback_t *callbacks);
-void lora_mac_test_send(void);
+void lora_mac_send(uint8_t *data, uint8_t len);
 
 #endif /* __LORA_MAC_H */
 

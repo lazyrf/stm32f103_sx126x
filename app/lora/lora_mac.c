@@ -23,13 +23,9 @@ extern struct timer rx_timeout_timer;
 
 #define RX_TIMEOUT_VALUE			0
 
-uint8_t tx_buffer[32] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
-        0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF};
-uint8_t rx_buffer[32] = {0};
-
-void lora_mac_test_send(void)
+void lora_mac_send(uint8_t *data, uint8_t len)
 {
-        Radio.send(tx_buffer, 32);
+        Radio.send(data, len);
 }
 
 static void dump_raw_packet(uint8_t is_tx, uint8_t *packet, int length, int16_t rssi, int8_t snr)
@@ -72,21 +68,8 @@ static void on_radio_rx_done( uint8_t *payload, uint16_t size, int16_t rssi, int
 {
         printf("[LoRa_MAC][INFO] Radio rx done.\r\n");
 
-        dump_raw_packet(0, payload, size, rssi, snr);
-
-        if (memcmp(payload, tx_buffer, 32) == 0) {
-                lora_ctx->stats.rx_cnt++;
-                lora_ctx->last_rx_time = clock_time();
-
-#if CONFIG_LORA_TEST_RX
-                mdelay(200);
-                memcpy(rx_buffer, tx_buffer, 32);
-                rx_buffer[0] = 0x88;
-                Radio.send(rx_buffer, 32);
-#endif /* CONFIG_LORA_TEST_RX */
-        } else {
-                lora_ctx->stats.rx_err_cnt++;
-        }
+        lora_ctx->stats.rx_cnt++;
+        lora_ctx->last_rx_time = clock_time();
 
 	if ((lora_ctx->callbacks != NULL) && (lora_ctx->callbacks->rx_done_cb != NULL)) {
                 lora_ctx->callbacks->rx_done_cb(payload, size, rssi, snr);
