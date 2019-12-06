@@ -34,6 +34,8 @@ PROCESS(oled_display_process, "OLED_Display");
 PROCESS(lora_test_process, "LoRa test");
 AUTOSTART_PROCESSES(&led_process);
 
+void oled_show_string(int x, int y, int len, const char *fmt, ...);
+
 // Default LoRa config
 radio_config_t lora_config = {
         433691000,      // Frequency
@@ -137,6 +139,8 @@ static void lora_app_rx_done_cb(uint8_t *payload, uint16_t size, int16_t rssi, i
 	// dump_packet(payload, size, rssi, snr);
 
 	if (memcmp(payload, tx_buffer, 32) == 0) {
+		char buf[16];
+
 		if (!DI2_DATA()) {
 			mdelay(200);
 			memcpy(rx_buffer, tx_buffer, 32);
@@ -144,6 +148,9 @@ static void lora_app_rx_done_cb(uint8_t *payload, uint16_t size, int16_t rssi, i
 			lora_mac_send(tx_buffer, 32);
 		}
 		rx_cnt++;
+
+		sprintf(buf, "RSSI:%4d dBm", rssi);
+		oled_show_string(0, 6, strlen(buf), buf);
 	}
 }
 
